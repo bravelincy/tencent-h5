@@ -1,0 +1,17 @@
+@import "base/variables";
+@import "base/mixins";
+@import "base/normalize";
+/** 按钮 **/
+@import "components/buttons";
+
+body {
+	background-color: $vi-color;
+	background-size: cover;
+	text-align: center;
+	padding: 100px;
+}
+
+h1 {
+	@include text-overflow;
+	color: #fff;
+}
