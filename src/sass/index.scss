@@ -4,14 +4,37 @@
 /** 按钮 **/
 @import "components/buttons";
 
+ul, li {
+	list-style: none;
+}
 body {
 	background-color: $vi-color;
 	background-size: cover;
 	text-align: center;
 	padding: 100px;
 }
-
 h1 {
 	@include text-overflow;
 	color: #fff;
+}
+.social-pages {
+	text-align: center;
+	li {
+		display: inline-block;
+		width: 30px;
+		height: 30px;
+		margin: 10px;
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: 80%;
+	}
+	.qq {
+		background-image: url(../images/qq.png);
+	}
+	.wx {
+		background-image: url(../images/wx.png);
+	}
+	.wb {
+		background-image: url(../images/wb.png);
+	}
 }

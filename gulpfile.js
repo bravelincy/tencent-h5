@@ -7,7 +7,7 @@ var reload      = browserSync.reload;
 //sass编译、自动前缀
 gulp.task('styles', function () {
 	return gulp.src('src/sass/**/*.scss')
-		.pipe($.sass({outputStyle: 'expanded'}))
+		.pipe($.sass({outputStyle: 'expanded'}).on('error', $.sass.logError))
 		.pipe($.autoprefixer({browsers: ['> 1%', 'last 2 versions', 'Android > 2.2', 'IOS > 5']}))
 		.pipe(gulp.dest('.tmp/css'))
 		.pipe(reload({stream: true}));
