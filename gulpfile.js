@@ -15,7 +15,7 @@ gulp.task('styles', function () {
 
 //html引用资源替换
 gulp.task('html', ['styles'], function () {
-	var assets = $.useref.assets({searchPath: ['.tmp', 'src']});
+	var assets = $.useref.assets({searchPath: ['.tmp', 'src', 'bower_components']});
 
 	return gulp.src('src/*.html')
 		.pipe(assets)
@@ -27,10 +27,10 @@ gulp.task('html', ['styles'], function () {
 });
 
 //启动调试服务
-gulp.task('serve', function () {
+gulp.task('serve', ['styles'], function () {
 	browserSync({
 		server: {
-			baseDir: ['.tmp', 'src']
+			baseDir: ['.tmp', 'src', 'bower_components']
 		},
 		notify: false
 	});
@@ -40,15 +40,15 @@ gulp.task('serve', function () {
 });
 
 //启动服务
-gulp.task('serve:dist', ['copy'], function () {
+gulp.task('serve:dist', ['dist'], function () {
 	browserSync({
 		server: 'dist',
 		notify: false
 	});
 });
 
-//拷贝发布代码
-gulp.task('copy', ['clean', 'html'], function () {
+//生成发布代码
+gulp.task('dist', ['clean', 'html'], function () {
 	return gulp.src('src/!(sass|js)/**/*')
 		.pipe(gulp.dest('dist'));
 });
