@@ -9,10 +9,12 @@
 
 html, body {
 	height: 100%;
+	overflow: hidden;
 }
 
 .pages {
 	height: 100%;
+	transition-timing-function: linear !important;
 	.page {
 		position: relative;
 		height: 100%;
