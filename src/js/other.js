@@ -1,6 +1,6 @@
 setTimeout(function () {
 	var body = $('body');
-	body.classList.add('loaded');
+	$('.page')[0].classList.add('active');
 }, 1000);
 
 $.on($('html'), 'touchstart', function(){});
@@ -46,8 +46,14 @@ $.on(window, 'load', function () {
 			e.stopPropagation();
 
 			if (touch && touch.dis) {
-				scrollPage(touch.dis, Date.now() - touch.beginT, function(index) {
-
+				var index = Math.abs(pages.curPos / height);
+				console.log('touchend');
+				console.log(touch.dis);
+				scrollPage(touch.dis, Date.now() - touch.beginT, function(targetIndex, time) {
+					setTimeout(function () {
+						$('.page')[index].classList.remove('active');
+						$('.page')[targetIndex].classList.add('active');
+					}, time);
 				});
 				touch = null;
 			}
@@ -66,10 +72,10 @@ $.on(window, 'load', function () {
 
 		if (Math.abs(dis) > height / 5 || cost < 100) {
 			var targetPos = pages.curPos = (dir === 'up') ? pages.curPos - height : pages.curPos + height;
-			var index = Math.abs(pages.curPos / height);
+			var targetIndex = Math.abs(pages.curPos / height);
 			time = 300;
 
-			callback.call(this, index);
+			callback.call(this, targetIndex, time);
 			scrollAnimation(targetPos, time);
 		} else {
 			time = 300;
@@ -94,6 +100,35 @@ $.on(window, 'load', function () {
 			]);
 		}
 
+		console.log(styles.join(';'))
+
 		pages.style.cssText = styles.join(';');
 	}
-})
+
+	//查看评语
+	(function () {
+		var prop = $('.page4 .prop');
+
+		$.on($('.remark-list'), 'touchend', function (e) {
+			var target = e.target;
+
+			if (target.classList.contains('show-all')) {
+				var parent = target.parentNode;
+				var oldHead = $('.hd', prop);
+				var oldContent = $('.content', prop);
+
+				while (parent.tagName !== 'LI') {
+					parent = parent.parentNode;
+				}
+
+				oldHead.innerHTML = $('.hd', parent).innerHTML;
+				oldContent.innerHTML = $('.content', parent).innerHTML;
+				prop.style.display = 'block';
+			}
+		});
+
+		$.on($('.page4 .close'), 'touchend', function (e) {
+			prop.style.display = 'none';
+		});
+	})();
+});
