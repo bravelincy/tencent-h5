@@ -1,7 +1,4 @@
-setTimeout(function () {
-	var body = $('body');
-	$('.page')[0].classList.add('active');
-}, 1000);
+var PAGE_INIT_TIME = Date.now();
 
 $.on($('html'), 'touchstart', function(){});
 $.on(window, 'load', function () {
@@ -60,17 +57,28 @@ $.on(window, 'load', function () {
 		}
 	};
 
+	loadedInit();
 	$.on(pages, 'touchstart', events.touchstart);
 	$.on(pages, 'touchmove', events.touchmove);
 	$.on(pages, 'touchend', events.touchend);
 	$.on(pages, 'touchcancel', events.touchend);
 
-	function scrollPage(dis, cost, callback){
+	function loadedInit() {
+		var now = Date.now();
+		var cost = now - PAGE_INIT_TIME;
+
+		setTimeout(function () {
+			$('#loading').style.display = 'none';
+			$('.page')[0].classList.add('active');
+		}, 999 - cost);
+	}
+
+	function scrollPage(dis, cost, callback) {
 		var dir = dis > 0 ? 'down' : 'up';
 		var time;
 		pages.moveLock = true;
 
-		if (Math.abs(dis) > height / 5 || cost < 100) {
+		if (Math.abs(dis) > height / 5 || cost < 200) {
 			var targetPos = pages.curPos = (dir === 'up') ? pages.curPos - height : pages.curPos + height;
 			var targetIndex = Math.abs(pages.curPos / height);
 			time = 300;

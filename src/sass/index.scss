@@ -24,7 +24,46 @@ body {
 .text-right {
 	text-align: right;
 }
+.tbl {
+	display: table;
+	.tbl-cell {
+		display: table-cell;
+		height: 100%;
+		text-align: center;
+		vertical-align: middle;
+	}
+}
 
+#loading {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 999;
+	background: #ed5b44;
+	.penguin {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: half(200px);
+		height: half(214px);
+		margin-top: -1.8rem;
+		background: url(../images/penguin.png) no-repeat;
+		background-size: contain;
+		background-position: left bottom;
+		transform: translate(-50%, -50%);
+		&:after {
+			content: "正在载入中..";
+			position: absolute;
+			bottom: -2.4rem;
+			width: 100%;
+			font-size: 1.2rem;
+			text-align: center;
+			color: #fff;
+		}
+	}
+}
 .pages {
 	height: 100%;
 	transition-timing-function: linear !important;
@@ -36,23 +75,21 @@ body {
 	.page1 {
 		&.active {
 			.medal {
-				opacity: 1;
-				animation: sink .6s ease-in-out both;
+				animation: sink .6s ease-in-out both, fade-in .5s both;
 			}
 			.penguins {
 				i {
 					transform: translate3d(0, 0, 0);
 					opacity: 1;
 				}
-				.left-one, .right-one {
-					opacity: 1;
+				.left-one {
+					animation: sink .3s .4s ease-in-out both, fade-in .5s .4s both;
+				}
+				.right-one {
+					animation: sink .3s .6s ease-in-out both, fade-in .5s .6s both;
 				}
 				.center-one {
-					opacity: 1;
-					transform: translate3d(0,0,0);
-					&:before, &:after {
-						transform: translate3d(0, 0, 0);
-					}
+					animation: sink .3s .5s ease-in-out both, fade-in .5s .5s both;
 					.stars {
 						opacity: 1;
 						i {
@@ -61,14 +98,10 @@ body {
 					}
 				}
 			}
-			.clouds {
-				opacity: 1;
-				animation: rise .8s both;
-			}
 		}
 		$spriteSize: 866px 750px;
 		$bgSize: half(nth($spriteSize, 1)) half(nth($spriteSize, 2));
-		background: nth($pageMainColor, 1) url(../images/page1_bg.jpg) center top no-repeat;
+		background: nth($pageMainColor, 1) url(../images/page_bg.jpg) center top no-repeat;
 		background-size: cover;
 		.medal {
 			width: half(567px);
@@ -76,24 +109,7 @@ body {
 			margin: 35px auto 0;
 			background: url(../images/page1_sprite.png) 0 half(-134px) no-repeat;
 			background-size: $bgSize;
-			transition: opacity .5s;
 			opacity: 0;
-			@at-root {
-				@keyframes sink {
-					0% {
-						transform: translate3d(0, -100%, 0);
-					}
-					50% {
-						transform: translate3d(0, 15%, 0);
-					}
-					75% {
-						transform: translate3d(0, -10%, 0);
-					}
-					100% {
-						transform: translate3d(0, 0, 0);
-					}
-				}
-			}
 		}
 		.penguins {
 			& > div {
@@ -112,7 +128,6 @@ body {
 				height: half(176px);
 				margin-left: half(-280px);
 				background-position: right half(-372px);
-				transition-delay: .6s;
 			}
 			.right-one {
 				bottom: 28%;
@@ -128,15 +143,13 @@ body {
 				height: half(240px);
 				margin-left: half(half(-227px));
 				background-position: right half(-128px);
-				transform: translate3d(100%, 250%, 0);
+				opacity: 0;
 				transition: all .5s -.2s;
 				&:before, &:after {
 					content: "";
 					position: absolute;
 					z-index: 2;
 					background: inherit;
-					transform: translate3d(50%, 100%, 0);
-					transition: all 1s -.3s;
 				}
 				&:before {
 					left: half(103px);
@@ -167,22 +180,9 @@ body {
 						background: #000;
 						border-radius: 50%;
 						transform: scale(.6, 1);
-						animation: blik 2s ease-in-out infinite;
+						animation: blink 2s ease-in-out infinite;
 						&.r {
 							margin-left: 22px;
-						}
-					}
-					@at-root {
-						@keyframes blik {
-							0% {
-								transform: scale(.6, 1);
-							}
-							4% {
-								transform: scale(.6, .2);
-							}
-							8% {
-								transform: scale(.6, 1);
-							}
 						}
 					}
 				}
@@ -194,7 +194,7 @@ body {
 					background: inherit;
 					background-position: right top;
 					opacity: 0;
-					transition: all .5s 1s;
+					transition: all .5s .5s;
 					i {
 						position: absolute;
 						width: half(34px);
@@ -220,22 +220,6 @@ body {
 						transform: rotate(-5deg);
 						animation-delay: -1.3s !important;
 					}
-					@at-root {
-						@keyframes light {
-							0% {
-								opacity: 0;
-								transform: scale(1);
-							}
-							20% {
-								opacity: 1;
-								transform: scale(.6);
-							}
-							50% {
-								opacity: 0;
-								transform: scale(1);
-							}
-						}
-					}
 				}
 				.shadow {
 					position: absolute;
@@ -249,52 +233,40 @@ body {
 				}
 			}
 		}
-		.clouds {
+	}
+	.clouds {
+		$spriteSize: 866px 750px;
+		$bgSize: half(nth($spriteSize, 1)) half(nth($spriteSize, 2));
+		position: absolute;
+		width: 100%;
+		left: 0;
+		bottom: 0;
+		padding-top: 10%;
+		margin-bottom: -10%;
+		background: #fff;
+		opacity: 0;
+		i {
 			position: absolute;
-			width: 100%;
 			left: 0;
 			bottom: 0;
-			padding-top: 10%;
-			margin-bottom: -10%;
-			background: #fff;
-			opacity: 0;
-			transition: opacity .5s;
-			i {
-				position: absolute;
-				left: 0;
-				bottom: 0;
-				width: 100%;
-				margin-bottom: 10%;
-				background: url(../images/page1_sprite.png) no-repeat;
-				background-size: percentage(1/($resWidth/nth($spriteSize, 1))) auto;
-			}
-			.cloud1 {
-				z-index: 3;
-				padding-top: percentage(182px/$resWidth);
-				background-position: left bottom;
-			}
-			.cloud2 {
-				padding-top: percentage(134px/$resWidth);
-				opacity: .7;
-				margin-bottom: 16%;
-			}
-			@at-root {
-				@keyframes rise {
-					0% {
-						transform: translate3d(0, 100%, 0);
-					}
-					50% {
-						transform: translate3d(0, -15%, 0);
-					}
-					75% {
-						transform: translate3d(0, 10%, 0);
-					}
-					100% {
-						transform: translate3d(0, 0, 0);
-					}
-				}
-			}
+			width: 100%;
+			margin-bottom: 10%;
+			background: url(../images/page1_sprite.png) no-repeat;
+			background-size: percentage(1/($resWidth/nth($spriteSize, 1))) auto;
 		}
+		.cloud1 {
+			z-index: 3;
+			padding-top: percentage(182px/$resWidth);
+			background-position: left bottom;
+		}
+		.cloud2 {
+			padding-top: percentage(134px/$resWidth);
+			opacity: .7;
+			margin-bottom: 16%;
+		}
+	}
+	.active .clouds {
+		animation: rise .8s both, fade-in .5s both;
 	}
 	.page2 {
 		background: nth($pageMainColor, 2);
@@ -319,25 +291,25 @@ body {
 				opacity: 0;
 				position: absolute;
 				left: 50%;
-				width: half(288px);
-				height: half(274px);
-				margin-left: half(half(-288px));
-				background: url(../images/page2_penguins.jpg) no-repeat;
-				background-size: cover;
+				width: 200px;
+				height: 33.333%;
+				margin-left: -100px;
+				background: url(../images/page2_penguins.jpg) center top no-repeat;
+				background-size: auto 300%;
 				transform: translate3d(0, -300%, 0);
 				transition: all .5s ease-in-out;
 			}
 			i:nth-of-type(1) {
+				top: 0;
 				transition-delay: .2s;
 			} 
 			i:nth-of-type(2) {
-				top: 50%;
-				margin-top: half(half(-274px)) - 6px;
+				top: 33.3333%;
 				background-position: center;
 				transition-delay: .1s;
 			}
 			i:nth-of-type(3) {
-				bottom: 0;
+				top: 66.6666%;
 				background-position: bottom;
 			}
 		}
@@ -355,6 +327,21 @@ body {
 		$bgSize: half(nth($spriteSize, 1)) half(nth($spriteSize, 2));
 		background: nth($pageMainColor, 3) url(../images/page3_bg.png) center top no-repeat;
 		background-size: 100% auto;
+		.photo {
+			position: absolute;
+			left: 50%;
+			top: pxToRem(30px);
+			width: pxToRem(258px);
+			height: pxToRem(258px);
+			margin-left: pxToRem(-258px/2);
+			border-radius: 50%;
+			overflow: hidden;
+			img {
+				width: 100%;
+				height: 100%;
+				border-radius: 50%;
+			}
+		}
 		.photo-cover {
 			position: absolute;
 			top: 0;
@@ -425,10 +412,13 @@ body {
 		$spriteSize: 265px 94px;
 		$bgSize: half(nth($spriteSize, 1)) half(nth($spriteSize, 2));
 		background: nth($pageMainColor, 4) url(../images/page4_bg.jpg) center 2% no-repeat;
-		background-size: percentage(476px/640px) auto;
+		background-size: auto 30%;
 		.remark-list {
+			position: absolute;
+			width: 100%;
+			box-sizing: border-box;
 			padding: 0 pxToRem(42px);
-			margin-top: percentage(400px/640px);
+			bottom: 10%;
 			list-style: none;
 			font-size: pxToRem(24px);
 			color: #245a05;
@@ -528,5 +518,206 @@ body {
 				font-size: pxToRem(24px);
 			}
 		}
+	}
+	.page5 {
+		$spriteSize: 640px 60px;
+		$bgSize: half(nth($spriteSize, 1)) half(nth($spriteSize, 2));
+		.bg {
+			height: 25%;
+			background: nth($pageMainColor, 5) url(../images/page5_bg.jpg) center no-repeat;
+			background-size: contain;
+		}
+		.four-grid {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			top: 25%;
+			color: #fff;
+			font-size: 1.2rem;
+			background: nth($pageMainColor, 5);
+			& > div {
+				float: left;
+				width: 50%;
+				height: 50%;
+				border-top: 1px solid rgba(#d8c4ff, .3);
+				box-sizing: border-box;
+			}
+			& > div:nth-child(2n) {
+				border-left: 1px solid rgba(#d8c4ff, .3);
+			}
+			strong {
+				display: block;
+				font-size: 15px;
+				color: #fcff00;
+			}
+			p {
+				height: 6rem;
+				padding: 0 1em;
+				text-align: left;
+				margin: .5em 0;
+			}
+			.icon1, .icon2, .icon3, .icon4 {
+				display: inline-block;
+				width: 150px;
+				height: 65px;
+				background: url(../images/page5_sprite.png) no-repeat;
+				background-size: auto 200%;
+				opacity: 0;
+			}
+			.icon1 {
+				
+			}
+			.icon2 {
+				background-position: right top;
+				animation-delay: .1s !important;
+			}
+			.icon3 {
+				background-position: left bottom;
+				animation-delay: .1s !important;
+			}
+			.icon4 {
+				background-position: right bottom;
+			}
+			.icon3, .icon4 {
+				height: 45px;
+				width: 130px;
+				margin-top: -10px;
+				background-size: auto 250%;
+			}
+		}
+		&.active {
+			.icon1, .icon2, .icon3, .icon4 {
+				animation: boom .3s linear both, fade-in .3s linear both;
+			}
+		}
+	}
+	.page6, .page7 {
+		$spriteSize: 544px 1090px;
+		$bgSize: half(nth($spriteSize, 1)) half(nth($spriteSize, 2));
+		background: nth($pageMainColor, 1) url(../images/page_bg.jpg) center top no-repeat;
+		background-size: cover;
+		.title, .sub-title, .penguin {
+			position: absolute;
+			left: 50%;
+			background: url(../images/page_sprite.png) no-repeat;
+			background-size: $bgSize;
+		}
+		.title, .sub-title {
+			opacity: 0;
+		}
+		&.active {
+			.title, .sub-title {
+				animation: sink .6s ease-in-out both, fade-in .6s both;
+			}
+		}
+		.penguin {
+			bottom: 15%;
+			width: half(266px);
+			height: half(284px);
+			margin-left: half(half(-266px));
+			background-position: left bottom;
+		}
+	}
+	.page6 {
+		.title {
+			top: half(72px);
+			width: half(444px);
+			height: half(182px);
+			margin-left: half(half(-444px));
+		}
+		.sub-title {
+			top: half(262px);
+			width: half(544px);
+			height: half(348px);
+			margin-left: half(half(-544px));
+			background-position: 0 half(-460px);
+		}
+	}
+	.page7 {
+		.title {
+			top: half(156px);
+			width: half(488px);
+			height: half(280px);
+			margin-left: half(half(-488px));
+			background-position: 0 half(-182px);
+		}
+	}
+}
+
+@keyframes fade-in {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+@keyframes boom {
+	0% {
+		transform: scale(.5);
+	}
+	50% {
+		transform: scale(1.2);
+	}
+	75% {
+		transform: scale(.8);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+@keyframes sink {
+	0% {
+		transform: translate3d(0, -100%, 0);
+	}
+	50% {
+		transform: translate3d(0, 15%, 0);
+	}
+	75% {
+		transform: translate3d(0, -10%, 0);
+	}
+	100% {
+		transform: translate3d(0, 0, 0);
+	}
+}
+@keyframes rise {
+	0% {
+		transform: translate3d(0, 100%, 0);
+	}
+	50% {
+		transform: translate3d(0, -15%, 0);
+	}
+	75% {
+		transform: translate3d(0, 10%, 0);
+	}
+	100% {
+		transform: translate3d(0, 0, 0);
+	}
+}
+@keyframes blink {
+	0% {
+		transform: scale(.6, 1);
+	}
+	4% {
+		transform: scale(.6, .2);
+	}
+	8% {
+		transform: scale(.6, 1);
+	}
+}
+@keyframes light {
+	0% {
+		opacity: 0;
+		transform: scale(1);
+	}
+	20% {
+		opacity: 1;
+		transform: scale(.6);
+	}
+	50% {
+		opacity: 0;
+		transform: scale(1);
 	}
 }
