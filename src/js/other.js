@@ -78,7 +78,7 @@ $.on(window, 'load', function () {
 		var time;
 		pages.moveLock = true;
 
-		if (Math.abs(dis) > height / 5 || cost < 200) {
+		if (Math.abs(dis) > height / 7) {
 			var targetPos = pages.curPos = (dir === 'up') ? pages.curPos - height : pages.curPos + height;
 			var targetIndex = Math.abs(pages.curPos / height);
 			time = 300;
