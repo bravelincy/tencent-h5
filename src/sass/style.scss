@@ -6,7 +6,7 @@
 }
 
 @function pxToRem($px) {
-  @return $px / 10px / 2 * 1rem;
+  @return $px / 20px / 2 * 1rem;
 }
 
 html, body {
@@ -15,6 +15,7 @@ html, body {
 }
 
 body {
+	font-size: .6rem;
 	font-family: Arial, Helvetica, sans-serif;
 	line-height: 1.5;
 	padding: 0;
@@ -56,9 +57,9 @@ body {
 		&:after {
 			content: "正在载入中..";
 			position: absolute;
-			bottom: -2.4rem;
+			bottom: -32px;
 			width: 100%;
-			font-size: 1.2rem;
+			font-size: 16px;
 			text-align: center;
 			color: #fff;
 		}
@@ -413,14 +414,19 @@ body {
 		$bgSize: half(nth($spriteSize, 1)) half(nth($spriteSize, 2));
 		background: nth($pageMainColor, 4) url(../images/page4_bg.jpg) center 2% no-repeat;
 		background-size: auto 30%;
-		.remark-list {
-			position: absolute;
+		.tbl {
+			position: relative;
+			top: 30%;
 			width: 100%;
+			height: 70%;
+		}
+		.remark-list {
 			box-sizing: border-box;
 			padding: 0 pxToRem(42px);
-			bottom: 10%;
+			margin: 0;
 			list-style: none;
 			font-size: pxToRem(24px);
+			text-align: left;
 			color: #245a05;
 			li {
 				position: relative;
@@ -430,32 +436,35 @@ body {
 				}
 			}
 			.hd {
-				margin-bottom: 1em;
 				color: #fff;
 				line-height: pxToRem(104px);
+				overflow: hidden;
 				img {
 					display: inline-block;
 					vertical-align: middle;
 					width: pxToRem(104px);
 					height: pxToRem(104px);
 					border: 2px solid #42980e;
-					border-radius: 50%;
+					border-radius: pxToRem(104px);
 				}
 				.name {
 					font-size: pxToRem(30px);
 				}
 			}
 			.content {
-				display: -webkit-box;
-				-webkit-line-clamp: 3;
-				-webkit-box-orient: vertical;
+				height: pxToRem(45px) * 3;
+				margin-top: .5em;
+				line-height: pxToRem(45px);
 				overflow: hidden;
+				p {
+					margin: 0;
+				}
 			}
 			.show-all {
 				position: absolute;
 				z-index: 3;
 				right: 0;
-				bottom: -.5em;
+				bottom: 0;
 				width: pxToRem(170px);
 				height: pxToRem(52px);
 				line-height: pxToRem(52px);
@@ -535,7 +544,6 @@ body {
 			bottom: 0;
 			top: 25%;
 			color: #fff;
-			font-size: 1.2rem;
 			background: nth($pageMainColor, 5);
 			& > div {
 				float: left;
@@ -553,7 +561,7 @@ body {
 				color: #fcff00;
 			}
 			p {
-				height: 6rem;
+				height: 3rem;
 				padding: 0 1em;
 				text-align: left;
 				margin: .5em 0;

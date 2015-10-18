@@ -3,7 +3,7 @@
 		var screenWidth = document.documentElement.offsetWidth;
 		var deviceSizeRatio = window.devicePixelRatio;
 		var baseWidth = 320;
-		var htmlFontSize = (screenWidth / baseWidth) * 10;
+		var htmlFontSize = (screenWidth / baseWidth) * 20;
 		document.documentElement.style.fontSize = htmlFontSize + 'px';
 	};
 

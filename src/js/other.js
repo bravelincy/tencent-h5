@@ -4,8 +4,11 @@ $.on($('html'), 'touchstart', function(){});
 $.on(window, 'load', function () {
 	var pages = $('.pages');
 	var height = pages.offsetHeight;
-	var bottomThreshold = -($('.page').length - 1) * height;
+	var pageAmount = $('.page').length;
+	var bottomThreshold = -(pageAmount - 1) * height;
 	var touch = null;
+	var curIndex = 0;
+	var curPos = 0;
 	var events = {
 		'touchstart': function (e) {
 			e.preventDefault();
@@ -18,7 +21,6 @@ $.on(window, 'load', function () {
 					beginY: coords.pageY,
 					beginT: Date.now()
 				}
-				pages.curPos = pages.curPos || 0;
 			}
 		},
 		'touchmove': function (e) {
@@ -30,11 +32,11 @@ $.on(window, 'load', function () {
 				var dis = y - touch.beginY;
 
 				//第一屏不能往上滚，最后一屏不能往下滚
-				if ((pages.curPos === 0 && dis > 0) || (pages.curPos === bottomThreshold && dis < 0)) {
+				if ((curPos === 0 && dis > 0) || (curPos === bottomThreshold && dis < 0)) {
 					return false;
 				} else {
 					touch.dis = dis;
-					pages.style.cssText = '-webkit-transform:translate3d(0,' + (pages.curPos + dis) + 'px,0)';
+					scrollAnimation(curPos + dis);
 				}
 			}
 		},
@@ -42,14 +44,13 @@ $.on(window, 'load', function () {
 			e.preventDefault();
 			e.stopPropagation();
 
+			var oldIndex = curIndex;
+
 			if (touch && touch.dis) {
-				var index = Math.abs(pages.curPos / height);
-				console.log('touchend');
-				console.log(touch.dis);
-				scrollPage(touch.dis, Date.now() - touch.beginT, function(targetIndex, time) {
+				scrollPage(touch.dis, Date.now() - touch.beginT, function(time) {
 					setTimeout(function () {
-						$('.page')[index].classList.remove('active');
-						$('.page')[targetIndex].classList.add('active');
+						$('.page')[oldIndex].classList.remove('active');
+						$('.page')[curIndex].classList.add('active');
 					}, time);
 				});
 				touch = null;
@@ -58,6 +59,7 @@ $.on(window, 'load', function () {
 	};
 
 	loadedInit();
+	$.on(window, 'resize', resizePage);
 	$.on(pages, 'touchstart', events.touchstart);
 	$.on(pages, 'touchmove', events.touchmove);
 	$.on(pages, 'touchend', events.touchend);
@@ -75,24 +77,36 @@ $.on(window, 'load', function () {
 
 	function scrollPage(dis, cost, callback) {
 		var dir = dis > 0 ? 'down' : 'up';
-		var time;
+		var time = 300;
 		pages.moveLock = true;
 
 		if (Math.abs(dis) > height / 7) {
-			var targetPos = pages.curPos = (dir === 'up') ? pages.curPos - height : pages.curPos + height;
-			var targetIndex = Math.abs(pages.curPos / height);
-			time = 300;
+			var targetPos;
+			if (dir === 'up') {
+				targetPos = curPos - height;
+				curIndex++;
+			} else {
+				targetPos = curPos + height;
+				curIndex--;
+			}
+			curPos = targetPos;
 
-			callback.call(this, targetIndex, time);
+			callback.call(this, time);
 			scrollAnimation(targetPos, time);
 		} else {
-			time = 300;
-			scrollAnimation(pages.curPos, time);
+			scrollAnimation(curPos, time);
 		}
 
 		setTimeout(function () {
 			pages.moveLock = false;
 		}, time);
+	}
+
+	function resizePage() {
+		height = pages.offsetHeight;
+		curPos = -curIndex * height;
+		bottomThreshold = -(pageAmount - 1) * height;
+		scrollAnimation(curPos);
 	}
 
 	function scrollAnimation(target, duration) {
@@ -103,12 +117,10 @@ $.on(window, 'load', function () {
 
 		if (duration) {
 			styles = styles.concat([
-				'-webkit-transition: all ' + duration + 'ms',
-				'transition: all ' + duration + 'ms'
+				'-webkit-transition:transform ' + duration + 'ms',
+				'transition:transform ' + duration + 'ms'
 			]);
 		}
-
-		console.log(styles.join(';'))
 
 		pages.style.cssText = styles.join(';');
 	}
@@ -116,6 +128,39 @@ $.on(window, 'load', function () {
 	//查看评语
 	(function () {
 		var prop = $('.page4 .prop');
+		var content = Array.prototype.slice.call($('.remark-list .content p'), 0);
+
+		function ellipsis(elem, limitLine, whitespace) {
+			var style = getStyle(elem);
+			var lineHeight = parseInt(style.lineHeight);
+			var fontSize = parseInt(style.fontSize);
+			var isOverflow = function () {
+				return elem.clientHeight > lineHeight * limitLine;
+			};
+
+			elem.originalText = elem.innerHTML;
+
+			if (isOverflow()) {
+				while (isOverflow()) {
+					elem.innerHTML = elem.innerHTML.slice(0, -1);
+				}
+
+				if (whitespace) {
+					var cutSize = parseInt(whitespace) / fontSize;
+					elem.innerHTML = elem.innerHTML.slice(0, -cutSize);
+				}
+				elem.innerHTML = elem.innerHTML.replace(/.{3}$/, '......');
+			}
+		}
+
+		function getStyle(elem) {
+			return window.getComputedStyle(elem, null);
+		}
+
+
+		content.forEach(function (elem) {
+			ellipsis(elem, 3, $('.show-all')[0].offsetWidth);
+		});
 
 		$.on($('.remark-list'), 'touchend', function (e) {
 			var target = e.target;
@@ -130,7 +175,7 @@ $.on(window, 'load', function () {
 				}
 
 				oldHead.innerHTML = $('.hd', parent).innerHTML;
-				oldContent.innerHTML = $('.content', parent).innerHTML;
+				oldContent.innerHTML = $('.content p', parent).originalText;
 				prop.style.display = 'block';
 			}
 		});
