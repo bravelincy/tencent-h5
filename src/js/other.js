@@ -1,69 +1,156 @@
 var PAGE_INIT_TIME = Date.now();
 
-$.on($('html'), 'touchstart', function(){});
+function pageScroll(options) {
+    var opts = {
+        container         : $(options.container),
+        direction         : options.direction || 'vertical',
+        effect            : options.effect || '',
+        start             : options.start || function(){},
+        end               : options.end || function(){},
+        scrollDuration    : 300,
+        springbackDuration: 200
+    };
+    var touch = null;
+    var child = opts.container.children;
+    var maxIndex = child.length - 1;
+    var onceDistance = opts.direction === 'vertical' ? document.documentElement.clientHeight: document.documentElement.clientWidth;
+    var current = {
+        index: 0,
+        position: 0
+    };
+    var evts = {
+        'touchstart': function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            //touch被销毁或第一次触摸才响应，否则页面还在动画中不响应
+            if (!touch) {
+                initTouch(e);
+                opts.start.call(child[current.index], current.index);
+            }
+        },
+        'touchmove': function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (touch) {
+                touch.distance = e.touches[0].pageY - touch.startY;
+                touch.direction = touch.distance < 0 ? 'forward' : 'backward';
+                
+                if (touch.direction === 'backward' && current.index === 0 || touch.direction === 'forward' && current.index === maxIndex) {
+                    initTouch(e);
+                } else {
+                    setCssText(touch.distance + current.position);
+                }
+            }
+        },
+        'touchend': function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (touch && touch.distance) {
+                touch.costTime = Date.now() - touch.startTime;
+                upliftHandler();
+            }
+
+            touch = null;
+        }
+    };
+    //防止在滑动过程中失去焦点导致停止
+    evts.touchcancel = evts.touchend;
+
+    bindEvents(evts);
+
+    //初始化touch信息
+    function initTouch(e) {
+        touch = {
+            distance: 0,
+            startX: e.touches[0].pageX,
+            startY: e.touches[0].pageY,
+            startTime: Date.now()
+        };
+    }
+
+    //滑动后抬起的处理
+    function upliftHandler() {
+        if (Math.abs(touch.distance) > onceDistance/6) {
+            scroll();
+        } else {
+            springback();
+        }
+    }
+
+    //翻页
+    function scroll() {
+        var oldIndex = current.index;
+
+        if (touch.direction === 'forward') {
+            current.index += 1;
+        } else {
+            current.index -= 1;
+        }
+
+        current.position = -current.index * onceDistance;
+        setCssText(current.position, opts.scrollDuration);
+        setTimeout(function () {
+            opts.end.apply(child[current.index], [current.index, oldIndex, child[oldIndex]]);
+        }, opts.scrollDuration);
+    }
+
+    //不满足翻页条件页面回弹
+    function springback() {
+        setCssText(current.position, opts.springbackDuration);
+    }
+
+    function setCssText(position, duration) {
+        var prefix  = ['webkit', 'moz', 'o', 'ms'];
+        var cssText = [];
+        var addText = function (text) {
+            for (var i = 0, len = prefix.length; i < len; i++) {
+                cssText.push('-' + prefix[i] + '-' + text);
+            }
+            cssText.push(text);
+        };
+
+        if (opts.direction === 'vertical') {
+            addText('transform:translate3d(0,' + position +'px,0)');
+        } else {
+            addText('transform:translate3d(' + position +'px,0,0)');
+        }
+
+        duration && addText('transition:' + ['transform', opts.effect, duration + 'ms'].join(' '));
+        opts.container.style.cssText = cssText.join(';');
+    }
+
+    function bindEvents(events) {
+        //TODO:safari出现滚动条
+        $('html').addEventListener('touchstart', function(){});
+        //页面调整自适应
+        window.addEventListener('resize', function () {
+            onceDistance = opts.direction === 'vertical' ? document.documentElement.clientHeight: document.documentElement.clientWidth;
+            current.position = -current.index * onceDistance;
+            setCssText(current.position);
+        });
+        for (var name in events) {
+            if (events.hasOwnProperty(name)) {
+                opts.container.addEventListener(name, events[name], false);
+            }
+        }
+    }
+}
+
 $.on(window, 'load', function () {
-	var pages = $('.pages');
-	var height = pages.offsetHeight;
-	var pageAmount = $('.page').length;
-	var bottomThreshold = -(pageAmount - 1) * height;
-	var touch = null;
-	var curIndex = 0;
-	var curPos = 0;
-	var events = {
-		'touchstart': function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-
-			if (!pages.moveLock) {
-				var coords = e.touches[0];
-				touch = {
-					beginX: coords.pageX,
-					beginY: coords.pageY,
-					beginT: Date.now()
-				}
-			}
-		},
-		'touchmove': function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-
-			if (touch) {
-				var y = e.touches[0].pageY;
-				var dis = y - touch.beginY;
-
-				//第一屏不能往上滚，最后一屏不能往下滚
-				if ((curPos === 0 && dis > 0) || (curPos === bottomThreshold && dis < 0)) {
-					return false;
-				} else {
-					touch.dis = dis;
-					scrollAnimation(curPos + dis);
-				}
-			}
-		},
-		'touchend': function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-
-			var oldIndex = curIndex;
-
-			if (touch && touch.dis) {
-				scrollPage(touch.dis, Date.now() - touch.beginT, function(time) {
-					setTimeout(function () {
-						$('.page')[oldIndex].classList.remove('active');
-						$('.page')[curIndex].classList.add('active');
-					}, time);
-				});
-				touch = null;
-			}
-		}
-	};
-
 	loadedInit();
-	$.on(window, 'resize', resizePage);
-	$.on(pages, 'touchstart', events.touchstart);
-	$.on(pages, 'touchmove', events.touchmove);
-	$.on(pages, 'touchend', events.touchend);
-	$.on(pages, 'touchcancel', events.touchend);
+	pageScroll({
+	    container: '.pages',
+	    direction: 'vertical',
+	    effect: 'ease',
+	    start: function (index) {
+	        console.log('start', this, index);
+	    },
+	    end: function (index, prevIndex, prevPage) {
+	        console.log('end', this, index, prevIndex, prevPage);
+	        this.classList.add('active');
+	        prevPage.classList.remove('active');
+	    }
+	});
 
 	function loadedInit() {
 		var now = Date.now();
@@ -73,56 +160,6 @@ $.on(window, 'load', function () {
 			$('#loading').style.display = 'none';
 			$('.page')[0].classList.add('active');
 		}, 999 - cost);
-	}
-
-	function scrollPage(dis, cost, callback) {
-		var dir = dis > 0 ? 'down' : 'up';
-		var time = 300;
-		pages.moveLock = true;
-
-		if (Math.abs(dis) > height / 7) {
-			var targetPos;
-			if (dir === 'up') {
-				targetPos = curPos - height;
-				curIndex++;
-			} else {
-				targetPos = curPos + height;
-				curIndex--;
-			}
-			curPos = targetPos;
-
-			callback.call(this, time);
-			scrollAnimation(targetPos, time);
-		} else {
-			scrollAnimation(curPos, time);
-		}
-
-		setTimeout(function () {
-			pages.moveLock = false;
-		}, time);
-	}
-
-	function resizePage() {
-		height = pages.offsetHeight;
-		curPos = -curIndex * height;
-		bottomThreshold = -(pageAmount - 1) * height;
-		scrollAnimation(curPos);
-	}
-
-	function scrollAnimation(target, duration) {
-		var styles = [
-			'-webkit-transform:translate3d(0,' + target + 'px,0)',
-			'transform:translate3d(0,' + target + 'px,0)'
-		];
-
-		if (duration) {
-			styles = styles.concat([
-				'-webkit-transition:transform ' + duration + 'ms',
-				'transition:transform ' + duration + 'ms'
-			]);
-		}
-
-		pages.style.cssText = styles.join(';');
 	}
 
 	//查看评语
